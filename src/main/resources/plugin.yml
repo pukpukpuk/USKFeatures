@@ -1,0 +1,4 @@
+name: USKFeatures
+version: '${project.version}'
+main: pukpukpuk.uskfeatures.USKFeatures
+api-version: 1.19
