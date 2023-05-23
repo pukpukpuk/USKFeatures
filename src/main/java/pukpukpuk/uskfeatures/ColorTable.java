@@ -15,6 +15,8 @@ public enum ColorTable {
     HIGHLIGHTED(0xd5f893),
     GLOBAL_CHAT_MARK(0xe39764),
     LOCAL_CHAT_MARK(0xfceba8),
+    GLOBAL_CHAT_NAME(0xa9bcbf),
+    LOCAL_CHAT_NAME(0xe6eeed),
 
     ;
 

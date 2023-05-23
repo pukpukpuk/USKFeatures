@@ -77,8 +77,8 @@ public class ChatController implements Listener {
         //name(hover with time): message
         //Component chatMarkComponent = Component.text(toGlobal ? "Ⓖ " : "Ⓛ ").color(ColorTable.CHAT_MARK.getColor());
         Component chatMarkComponent = toGlobal ?
-                Component.text("Ⓖ ").color(ColorTable.GLOBAL_CHAT_MARK.getColor()) :
-                Component.text("Ⓛ ").color(ColorTable.LOCAL_CHAT_MARK.getColor());
+                Component.text("ɢ ").color(ColorTable.GLOBAL_CHAT_MARK.getColor()) :
+                Component.text("ʟ ").color(ColorTable.LOCAL_CHAT_MARK.getColor());
 
         String hintTitle = toGlobal ? "Глобальный чат\n" : "Локальный чат\n";
         TextColor hintColor = (toGlobal ? ColorTable.GLOBAL_CHAT_MARK : ColorTable.LOCAL_CHAT_MARK).getColor();
@@ -92,7 +92,8 @@ public class ChatController implements Listener {
                                 .append(Component.text(hintText)
                                         .color(ColorTable.DEFAULT.getColor()))));
 
-        Component nameComponent = player.displayName()
+        Component nameComponent = Component.text(player.getName())
+                .color((toGlobal ? ColorTable.GLOBAL_CHAT_NAME : ColorTable.LOCAL_CHAT_NAME).getColor())
                 .hoverEvent(HoverEvent.showText(Component.text(getTimeText())
                         .color(ColorTable.TIME.getColor())));
 
