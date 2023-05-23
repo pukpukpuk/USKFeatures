@@ -6,6 +6,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -36,9 +37,14 @@ public class NamesColorController implements Listener {
     private void updatePlayerNameColor(Player player) {
         Component component = Component.text(player.getName());
 
-        String environment = player.getWorld().getEnvironment().name().toUpperCase();
-        component = component.color(TextColor.color(ColorTable.tryGet(environment).getColor()));
+        String environment = getEnvironmentName(player);
+        component = component.color(ColorTable.tryGet(environment).getColor());
 
         player.playerListName(component);
+        player.displayName(component);
+    }
+
+    public static String getEnvironmentName(Player player) {
+        return player.getWorld().getEnvironment().name().toUpperCase();
     }
 }

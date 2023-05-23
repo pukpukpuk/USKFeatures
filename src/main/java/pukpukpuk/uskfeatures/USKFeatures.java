@@ -1,19 +1,23 @@
 package pukpukpuk.uskfeatures;
 
+import co.aikar.commands.PaperCommandManager;
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class USKFeatures extends JavaPlugin {
 
+    @Getter
+    private static PaperCommandManager commandManager;
+
     @Override
     public void onEnable() {
+        commandManager = new PaperCommandManager(this);
+
         getServer().getPluginManager().registerEvents(new NamesColorController(), this);
-        // сделать цветоники
-        // чат
+        getServer().getPluginManager().registerEvents(new ChatController(), this);
     }
 
     @Override
-    public void onDisable() {
-        // Plugin shutdown logic
-    }
+    public void onDisable() { }
 }
