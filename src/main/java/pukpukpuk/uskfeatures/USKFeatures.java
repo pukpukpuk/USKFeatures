@@ -16,6 +16,8 @@ public final class USKFeatures extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new NamesColorController(), this);
         getServer().getPluginManager().registerEvents(new ChatController(), this);
+        getServer().getPluginManager().registerEvents(new PingCommandController(), this);
+
     }
 
     @Override

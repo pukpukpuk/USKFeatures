@@ -5,6 +5,7 @@ import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.Default;
 import co.aikar.commands.annotation.HelpCommand;
 import lombok.AllArgsConstructor;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentBuilder;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -25,22 +26,19 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 
 public class ChatController implements Listener {
 
-    private final ForceGlobalCommand forceGlobalCommand;
+    private final ToggleGlobalCommand toggleGlobalCommand;
 
     public ChatController() {
-        USKFeatures.getCommandManager().registerCommand(forceGlobalCommand = new ForceGlobalCommand());
+        USKFeatures.getCommandManager().registerCommand(toggleGlobalCommand = new ToggleGlobalCommand());
     }
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
-        forceGlobalCommand.players.remove(event.getPlayer().getName());
+        toggleGlobalCommand.players.remove(event.getPlayer().getName());
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -51,28 +49,65 @@ public class ChatController implements Listener {
         String message = event.getMessage();
 
         boolean exclSymbol = message.toCharArray()[0] == '!';
-        boolean inPlayers = forceGlobalCommand.players.contains(player.getName());
-        boolean toGlobal = exclSymbol || inPlayers;
+        boolean inverted = toggleGlobalCommand.players.contains(player.getName());
+        boolean toGlobal = inverted != exclSymbol;
 
         if(exclSymbol) {
             message = message.substring(1);
         }
 
-        Component component = createMessageComponent(player, message, toGlobal);
+        List<Component> componentList = createMessageComponent(player, message, toGlobal);
 
-        Bukkit.getConsoleSender().sendMessage(component);
+        List<Audience> audiences = new ArrayList<>();
+        audiences.add(Bukkit.getConsoleSender());
+        audiences.add(player);
+
         Bukkit.getOnlinePlayers().forEach(recipient -> {
+            if(recipient == player)
+                return;
+
             boolean sameWorld = player.getWorld() == recipient.getWorld();
             boolean inRadius = sameWorld && player.getLocation().distanceSquared(recipient.getLocation()) <= 128*128;
             boolean canHear = sameWorld && inRadius;
 
             if(toGlobal || canHear) {
-                recipient.sendMessage(component);
+                audiences.add(recipient);
             }
         });
+
+        boolean noOneHasHeard = audiences.size() <= 2 && !toGlobal;
+
+        if(!noOneHasHeard && !toGlobal) {
+            Component component = componentList.remove(componentList.size()-1);
+
+            StringJoiner stringJoiner = new StringJoiner(", ");
+            for (int i = 2; i < audiences.size(); i++) {
+                Audience a = audiences.get(i);
+                if(a instanceof Player)
+                    stringJoiner.add(((Player) a).getName());
+
+            }
+
+            Component hoverText = Component.text("Это сообщение увидели: ").color(ColorTable.DEFAULT.getColor());
+            hoverText = hoverText.append(Component.text(stringJoiner.toString()).color(ColorTable.HIGHLIGHTED.getColor()));
+
+            component = component.hoverEvent(HoverEvent.showText(hoverText));
+            componentList.add(component);
+        }
+
+        Component component = Component.empty();
+        for (Component c : componentList)
+            component = component.append(c);
+
+        for (Audience audience : audiences)
+            audience.sendMessage(component);
+
+        if(noOneHasHeard) {
+            player.sendMessage(Component.text("Твоё сообщение никто не увидел").color(ColorTable.ERROR.getColor()));
+        }
     }
 
-    private Component createMessageComponent(Player player, String message, boolean toGlobal) {
+    private List<Component> createMessageComponent(Player player, String message, boolean toGlobal) {
         //hover
         //name(hover with time): message
         //Component chatMarkComponent = Component.text(toGlobal ? "Ⓖ " : "Ⓛ ").color(ColorTable.CHAT_MARK.getColor());
@@ -99,7 +134,7 @@ public class ChatController implements Listener {
 
         Component messageComponent = Component.text(": " + message).color(ColorTable.DEFAULT.getColor());
 
-        return Component.empty().append(chatMarkComponent).append(nameComponent).append(messageComponent);
+        return new ArrayList<>(List.of(chatMarkComponent, nameComponent, messageComponent));
     }
 
     private String getTimeText() {
@@ -107,8 +142,8 @@ public class ChatController implements Listener {
         return time.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
     }
 
-    @CommandAlias("forceglobal|fg")
-    public static class ForceGlobalCommand extends BaseCommand {
+    @CommandAlias("toggleglobal|tg")
+    public static class ToggleGlobalCommand extends BaseCommand {
         private List<String> players = new LinkedList<>();
 
         @Default
@@ -119,11 +154,6 @@ public class ChatController implements Listener {
                 players.remove(name);
             else
                 players.add(name);
-        }
-
-        @HelpCommand
-        public void OnHelp(CommandSender sender) {
-
         }
     }
 }
