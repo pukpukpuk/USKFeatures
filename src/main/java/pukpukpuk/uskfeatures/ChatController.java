@@ -88,8 +88,8 @@ public class ChatController implements Listener {
 
             }
 
-            Component hoverText = Component.text("Это сообщение увидели: ").color(ColorTable.DEFAULT.getColor());
-            hoverText = hoverText.append(Component.text(stringJoiner.toString()).color(ColorTable.HIGHLIGHTED.getColor()));
+            Component hoverText = ColorTable.text("Это сообщение увидели: ");
+            hoverText = hoverText.append(ColorTable.HIGHLIGHTED.coloredText(stringJoiner.toString()));
 
             component = component.hoverEvent(HoverEvent.showText(hoverText));
             componentList.add(component);
@@ -103,36 +103,28 @@ public class ChatController implements Listener {
             audience.sendMessage(component);
 
         if(noOneHasHeard) {
-            player.sendMessage(Component.text("Твоё сообщение никто не увидел").color(ColorTable.ERROR.getColor()));
+            player.sendMessage(ColorTable.ERROR.coloredText("Твоё сообщение никто не увидел"));
         }
     }
 
     private List<Component> createMessageComponent(Player player, String message, boolean toGlobal) {
-        //hover
-        //name(hover with time): message
-        //Component chatMarkComponent = Component.text(toGlobal ? "Ⓖ " : "Ⓛ ").color(ColorTable.CHAT_MARK.getColor());
-        Component chatMarkComponent = toGlobal ?
-                Component.text("ɢ ").color(ColorTable.GLOBAL_CHAT_MARK.getColor()) :
-                Component.text("ʟ ").color(ColorTable.LOCAL_CHAT_MARK.getColor());
+        ColorTable markColor = toGlobal ? ColorTable.GLOBAL_CHAT_MARK : ColorTable.LOCAL_CHAT_MARK;
 
-        String hintTitle = toGlobal ? "Глобальный чат\n" : "Локальный чат\n";
-        TextColor hintColor = (toGlobal ? ColorTable.GLOBAL_CHAT_MARK : ColorTable.LOCAL_CHAT_MARK).getColor();
+        Component chatMarkComponent = markColor.coloredText(toGlobal ? "ɢ " : "ʟ ");
+
+        String hintTitle = toGlobal ? "Глобальный чат" : "Локальный чат";
         String hintText = toGlobal ? "Это сообщение видят все игроки"
                 : "Это сообщение видят только те, кто находится в восьми чанках от вас";
 
         chatMarkComponent = chatMarkComponent.hoverEvent(
-                HoverEvent.showText(
-                        Component.text(hintTitle)
-                                .color(hintColor)
-                                .append(Component.text(hintText)
-                                        .color(ColorTable.DEFAULT.getColor()))));
+                HoverEvent.showText(markColor.coloredText(hintTitle).append(ColorTable.text(hintText+"\n")))
+        );
 
-        Component nameComponent = Component.text(player.getName())
-                .color((toGlobal ? ColorTable.GLOBAL_CHAT_NAME : ColorTable.LOCAL_CHAT_NAME).getColor())
-                .hoverEvent(HoverEvent.showText(Component.text(getTimeText())
-                        .color(ColorTable.TIME.getColor())));
+        ColorTable nameColor = toGlobal ? ColorTable.GLOBAL_CHAT_NAME : ColorTable.LOCAL_CHAT_NAME;
+        Component nameComponent = nameColor.coloredText(player.getName())
+                .hoverEvent(HoverEvent.showText(ColorTable.TIME.coloredText(getTimeText())));
 
-        Component messageComponent = Component.text(": " + message).color(ColorTable.DEFAULT.getColor());
+        Component messageComponent = ColorTable.text(": " + message);
 
         return new ArrayList<>(List.of(chatMarkComponent, nameComponent, messageComponent));
     }

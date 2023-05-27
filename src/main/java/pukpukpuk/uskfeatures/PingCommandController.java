@@ -24,9 +24,9 @@ public class PingCommandController extends BaseCommand implements Listener {
     private void printPing(Player recipient, Player player) {
         String text = recipient == player ? " Твой пинг: " : String.format(" Пинг игрока %s: ", player.getName());
 
-        recipient.sendMessage(Component.text(" ⌛").color(ColorTable.HIGHLIGHTED.getColor())
-                .append(Component.text(text).color(ColorTable.DEFAULT.getColor()))
-                .append(Component.text(player.getPing()).color(ColorTable.HIGHLIGHTED.getColor()))
+        recipient.sendMessage(ColorTable.HIGHLIGHTED.coloredText(" ⌛")
+                .append(ColorTable.text(text))
+                .append(ColorTable.HIGHLIGHTED.coloredText(player.getPing()))
         );
     }
 }

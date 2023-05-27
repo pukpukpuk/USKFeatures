@@ -2,6 +2,7 @@ package pukpukpuk.uskfeatures;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Color;
 
@@ -35,5 +36,37 @@ public enum ColorTable {
 
     public TextColor getColor() {
         return TextColor.color(hex);
+    }
+
+    public Component coloredText(String content) {
+        return Component.text(content, getColor());
+    }
+
+    public Component coloredText(int value) {
+        return coloredText(String.valueOf(value));
+    }
+
+    public Component coloredText(double value) {
+        return coloredText(String.valueOf(value));
+    }
+
+    public Component coloredText(float value) {
+        return coloredText(String.valueOf(value));
+    }
+
+    public static Component text(String content) {
+        return ColorTable.DEFAULT.coloredText(content);
+    }
+
+    public static Component text(int value) {
+        return text(String.valueOf(value));
+    }
+
+    public static Component text(double value) {
+        return text(String.valueOf(value));
+    }
+
+    public static Component text(float value) {
+        return text(String.valueOf(value));
     }
 }

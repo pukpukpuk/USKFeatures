@@ -34,8 +34,8 @@ public class TabListTextController implements Listener {
     }
 
     private void updatePlayerListTexts(Player player) {
-        Component header = Component.text(" \nUSK 5");
-        header = header.color(ColorTable.HIGHLIGHTED.getColor()).decorate(TextDecoration.BOLD);
+        Component header = ColorTable.HIGHLIGHTED.coloredText(" \nUSK 5")
+                .decorate(TextDecoration.BOLD);
 
         Component footer = Component.newline()
                 .append(getTPSLine())
@@ -53,15 +53,12 @@ public class TabListTextController implements Listener {
         ValueState state = currentTPS > previousTPS ? ValueState.GOOD_INCREASED
                 : currentTPS < previousTPS ? ValueState.BAD_DECREASED
                 : ValueState.NO_CHANGE;
-        //String footerText = String.format(" \n TPS: %s \n Пинг: %s \n ", getTPS(), player.getPing());
 
-        Component tpsLine = Component.text(" TPS: ").color(ColorTable.DEFAULT.getColor());
-        tpsLine = tpsLine.append(Component.text(getTPS()).color(ColorTable.HIGHLIGHTED.getColor()))
+        return ColorTable.text(" TPS: ")
+                .append(ColorTable.HIGHLIGHTED.coloredText(currentTPS))
                 .appendSpace()
                 .append(state.symbol)
                 .appendSpace();
-
-        return tpsLine;
     }
 
     private Component getPingLine(Player player) {
@@ -72,22 +69,20 @@ public class TabListTextController implements Listener {
                 : current > previous ? ValueState.BAD_INCREASED
                 : ValueState.NO_CHANGE;
 
-        Component pingLine = Component.text(" Пинг: ").color(ColorTable.DEFAULT.getColor());
-        pingLine = pingLine.append(Component.text(player.getPing()).color(ColorTable.HIGHLIGHTED.getColor()))
+        return ColorTable.text(" Пинг: ")
+                .append(ColorTable.HIGHLIGHTED.coloredText(player.getPing()))
                 .appendSpace()
                 .append(state.symbol)
                 .appendSpace();
-
-        return pingLine;
     }
 
     @AllArgsConstructor
     private enum ValueState {
-        NO_CHANGE(Component.text("-").color(ColorTable.DEFAULT.getColor())),
-        GOOD_INCREASED(Component.text("↑").color(ColorTable.SUCCESS.getColor())),
-        GOOD_DECREASED(Component.text("↓").color(ColorTable.SUCCESS.getColor())),
-        BAD_INCREASED(Component.text("↑").color(ColorTable.ERROR.getColor())),
-        BAD_DECREASED(Component.text("↓").color(ColorTable.ERROR.getColor())),
+        NO_CHANGE(ColorTable.text("-")),
+        GOOD_INCREASED(ColorTable.SUCCESS.coloredText("↑")),
+        GOOD_DECREASED(ColorTable.SUCCESS.coloredText("↓")),
+        BAD_INCREASED(ColorTable.ERROR.coloredText("↑")),
+        BAD_DECREASED(ColorTable.ERROR.coloredText("↓")),
         ;
 
         private final Component symbol;
