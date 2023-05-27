@@ -3,6 +3,7 @@ package pukpukpuk.uskfeatures;
 import co.aikar.commands.PaperCommandManager;
 import lombok.Getter;
 import org.bukkit.Bukkit;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class USKFeatures extends JavaPlugin {
@@ -14,10 +15,13 @@ public final class USKFeatures extends JavaPlugin {
     public void onEnable() {
         commandManager = new PaperCommandManager(this);
 
-        getServer().getPluginManager().registerEvents(new NamesColorController(), this);
-        getServer().getPluginManager().registerEvents(new ChatController(), this);
-        getServer().getPluginManager().registerEvents(new PingCommandController(), this);
+        register(new NamesColorController(), new ChatController(), new PingCommandController(), new TabListTextController(this));
+    }
 
+    private void register(Listener... listeners) {
+        for (Listener listener : listeners) {
+            getServer().getPluginManager().registerEvents(listener, this);
+        }
     }
 
     @Override

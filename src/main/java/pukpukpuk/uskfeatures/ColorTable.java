@@ -18,6 +18,8 @@ public enum ColorTable {
     GLOBAL_CHAT_NAME(0xa9bcbf),
     LOCAL_CHAT_NAME(0xe6eeed),
     ERROR(0xbc5960),
+    SUCCESS(0x4e9363),
+    WARNING(0xf5c47c),
     ;
 
     @Getter
