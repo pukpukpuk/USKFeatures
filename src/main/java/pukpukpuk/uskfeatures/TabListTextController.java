@@ -25,7 +25,7 @@ public class TabListTextController implements Listener {
                 previousPings.put(player.getName(), player.getPing());
             });
             previousTPS = getTPS();
-        }, 0, 10);
+        }, 0, 50);
     }
 
     @EventHandler
@@ -89,6 +89,6 @@ public class TabListTextController implements Listener {
     }
 
     private double getTPS() {
-        return Math.floor(Bukkit.getTPS()[0]*10d)/10;
+        return Math.min(Math.floor(Bukkit.getTPS()[0]*10d)/10, 20);
     }
 }
