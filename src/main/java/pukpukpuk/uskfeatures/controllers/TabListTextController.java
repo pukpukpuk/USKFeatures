@@ -91,6 +91,6 @@ public class TabListTextController implements Listener {
     }
 
     private double getTPS() {
-        return Math.min(Math.floor(Bukkit.getTPS()[0]*10d)/10, 20);
+        return Math.min(Math.floor(Bukkit.getTPS()[0] * 10d) / 10, 20);
     }
 }

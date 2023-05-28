@@ -54,7 +54,7 @@ public class ChatController implements Listener {
         boolean inverted = toggleGlobalCommand.players.contains(player.getName());
         boolean toGlobal = inverted != exclSymbol;
 
-        if(exclSymbol) {
+        if (exclSymbol) {
             message = message.substring(1);
         }
 
@@ -65,27 +65,27 @@ public class ChatController implements Listener {
         audiences.add(player);
 
         Bukkit.getOnlinePlayers().forEach(recipient -> {
-            if(recipient == player)
+            if (recipient == player)
                 return;
 
             boolean sameWorld = player.getWorld() == recipient.getWorld();
-            boolean inRadius = sameWorld && player.getLocation().distanceSquared(recipient.getLocation()) <= 128*128;
+            boolean inRadius = sameWorld && player.getLocation().distanceSquared(recipient.getLocation()) <= 128 * 128;
             boolean canHear = sameWorld && inRadius;
 
-            if(toGlobal || canHear) {
+            if (toGlobal || canHear) {
                 audiences.add(recipient);
             }
         });
 
         boolean noOneHasHeard = audiences.size() <= 2 && !toGlobal;
 
-        if(!noOneHasHeard && !toGlobal) {
-            Component component = componentList.remove(componentList.size()-1);
+        if (!noOneHasHeard && !toGlobal) {
+            Component component = componentList.remove(componentList.size() - 1);
 
             StringJoiner stringJoiner = new StringJoiner(", ");
             for (int i = 2; i < audiences.size(); i++) {
                 Audience a = audiences.get(i);
-                if(a instanceof Player)
+                if (a instanceof Player)
                     stringJoiner.add(((Player) a).getName());
 
             }
@@ -104,7 +104,7 @@ public class ChatController implements Listener {
         for (Audience audience : audiences)
             audience.sendMessage(component);
 
-        if(noOneHasHeard) {
+        if (noOneHasHeard) {
             player.sendMessage(ColorTable.ERROR.coloredText("Твоё сообщение никто не увидел"));
         }
     }
@@ -119,7 +119,7 @@ public class ChatController implements Listener {
                 : "Это сообщение видят только те, кто находится в восьми чанках от вас";
 
         chatMarkComponent = chatMarkComponent.hoverEvent(
-                HoverEvent.showText(markColor.coloredText(hintTitle+"\n").append(ColorTable.text(hintText)))
+                HoverEvent.showText(markColor.coloredText(hintTitle + "\n").append(ColorTable.text(hintText)))
         );
 
         ColorTable nameColor = toGlobal ? ColorTable.GLOBAL_CHAT_NAME : ColorTable.LOCAL_CHAT_NAME;
@@ -144,7 +144,7 @@ public class ChatController implements Listener {
         public void OnDefault(Player player) {
             String name = player.getName();
 
-            if(players.contains(name))
+            if (players.contains(name))
                 players.remove(name);
             else
                 players.add(name);
