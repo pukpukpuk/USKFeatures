@@ -1,4 +1,4 @@
-package pukpukpuk.uskfeatures;
+package pukpukpuk.uskfeatures.controllers;
 
 import lombok.AllArgsConstructor;
 import net.kyori.adventure.text.Component;
@@ -9,6 +9,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import pukpukpuk.uskfeatures.ColorTable;
+import pukpukpuk.uskfeatures.USKFeatures;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;

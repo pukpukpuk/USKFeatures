@@ -1,4 +1,4 @@
-package pukpukpuk.uskfeatures;
+package pukpukpuk.uskfeatures.controllers;
 
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.CommandAlias;
@@ -20,6 +20,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import pukpukpuk.uskfeatures.ColorTable;
+import pukpukpuk.uskfeatures.USKFeatures;
 
 import java.time.Clock;
 import java.time.LocalDate;

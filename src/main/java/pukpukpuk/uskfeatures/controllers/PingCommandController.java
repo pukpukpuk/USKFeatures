@@ -1,4 +1,4 @@
-package pukpukpuk.uskfeatures;
+package pukpukpuk.uskfeatures.controllers;
 
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.*;
@@ -6,6 +6,8 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
+import pukpukpuk.uskfeatures.ColorTable;
+import pukpukpuk.uskfeatures.USKFeatures;
 
 @CommandAlias("ping")
 public class PingCommandController extends BaseCommand implements Listener {

@@ -1,4 +1,4 @@
-package pukpukpuk.uskfeatures;
+package pukpukpuk.uskfeatures.controllers;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
@@ -13,6 +13,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
+import pukpukpuk.uskfeatures.ColorTable;
 
 public class NamesColorController implements Listener {
 
