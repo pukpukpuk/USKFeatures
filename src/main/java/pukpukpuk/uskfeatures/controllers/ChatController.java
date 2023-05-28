@@ -14,12 +14,18 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import pukpukpuk.uskfeatures.ColorTable;
 import pukpukpuk.uskfeatures.USKFeatures;
 
@@ -29,8 +35,12 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class ChatController implements Listener {
+public class ChatController implements IController {
+
+    private static Pattern PING_REGEX = Pattern.compile("^@(.+)");
 
     private final ToggleGlobalCommand toggleGlobalCommand;
 
@@ -61,7 +71,7 @@ public class ChatController implements Listener {
         List<Audience> audiences = getPlayerAudiences(player, toGlobal);
         boolean noOneHasHeard = audiences.size() <= 2 && !toGlobal;
 
-        List<Component> componentList = createMessageComponent(player, message, toGlobal);
+        List<Component> componentList = createMessageComponent(player, message, toGlobal, audiences);
 
         if (!noOneHasHeard && !toGlobal) {
             Component component = componentList.remove(componentList.size() - 1);
@@ -114,7 +124,7 @@ public class ChatController implements Listener {
         return audiences;
     }
 
-    private List<Component> createMessageComponent(Player player, String message, boolean toGlobal) {
+    private List<Component> createMessageComponent(Player player, String message, boolean toGlobal, List<Audience> audiences) {
         ColorTable markColor = toGlobal ? ColorTable.GLOBAL_CHAT_MARK : ColorTable.LOCAL_CHAT_MARK;
 
         Component chatMarkComponent = markColor.coloredText(toGlobal ? "ɢ " : "ʟ ");
@@ -131,9 +141,40 @@ public class ChatController implements Listener {
         Component nameComponent = nameColor.coloredText(player.getName())
                 .hoverEvent(HoverEvent.showText(ColorTable.TIME.coloredText(getTimeText())));
 
-        Component messageComponent = ColorTable.text(": " + message);
+        return new ArrayList<>(List.of(chatMarkComponent, nameComponent, ColorTable.text(": "), mentionPlayers(message, audiences)));
+    }
 
-        return new ArrayList<>(List.of(chatMarkComponent, nameComponent, messageComponent));
+    private Component mentionPlayers(String message, List<Audience> audiences) {
+        String[] words = message.split(" ");
+        Set<Player> mentionedPlayers = new HashSet<>();
+
+        Component component = Component.empty();
+
+        for (String word: words) {
+            ColorTable wordColor = ColorTable.DEFAULT;
+
+            Matcher matcher = PING_REGEX.matcher(word);
+            Player withSymbol = matcher.matches() ? Bukkit.getPlayerExact(matcher.group(1)) : null;
+            Player withoutSymbol = Bukkit.getPlayerExact(word);
+
+            if(withSymbol != null || withoutSymbol != null) {
+                Player mentioned = withSymbol != null ? withSymbol : withoutSymbol;
+                mentionedPlayers.add(mentioned);
+
+                wordColor = ColorTable.MENTIONED;
+                word = (word.charAt(0) != '@' ? "@" : "") + word;
+            }
+
+            component = component.append(wordColor.coloredText(word + " "));
+        }
+
+        mentionedPlayers.forEach(mentioned -> {
+            if(audiences.contains(mentioned)) {
+                mentioned.playSound(mentioned, Sound.BLOCK_NOTE_BLOCK_IRON_XYLOPHONE, SoundCategory.PLAYERS, .8f, 1.2f);
+            }
+        });
+
+        return component;
     }
 
     private String getTimeText() {

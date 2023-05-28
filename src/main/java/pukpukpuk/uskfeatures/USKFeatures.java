@@ -1,18 +1,17 @@
 package pukpukpuk.uskfeatures;
 
 import co.aikar.commands.PaperCommandManager;
+import com.google.common.reflect.ClassPath;
 import lombok.Getter;
 import org.bukkit.Bukkit;
-import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.reflections.Reflections;
-import pukpukpuk.uskfeatures.controllers.ChatController;
-import pukpukpuk.uskfeatures.controllers.NamesColorController;
-import pukpukpuk.uskfeatures.controllers.PingCommandController;
-import pukpukpuk.uskfeatures.controllers.TabListTextController;
+import pukpukpuk.uskfeatures.controllers.IController;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public final class USKFeatures extends JavaPlugin {
 
@@ -31,17 +30,17 @@ public final class USKFeatures extends JavaPlugin {
     }
 
     private void registerComponents() {
-        String pkg = USKFeatures.class.getPackage().getName();
+        String packageName = IController.class.getPackage().getName();
 
-        Reflections reflections = new Reflections(pkg);
-        Set<Class<?>> classes = new HashSet<>(reflections.getSubTypesOf(Listener.class));
+        Reflections reflections = new Reflections(packageName);
+        Set<Class<?>> classes = new HashSet<>(reflections.getSubTypesOf(IController.class));
 
         for (Class<?> cls : classes) {
             try {
-                Class<Listener> module = (Class<Listener>) cls;
-                Listener listener = module.getDeclaredConstructor().newInstance();
+                Class<IController> module = (Class<IController>) cls;
+                IController controller = module.getDeclaredConstructor().newInstance();
 
-                Bukkit.getPluginManager().registerEvents(listener, this);
+                Bukkit.getPluginManager().registerEvents(controller, this);
             } catch (Exception e) {
                 e.printStackTrace();
                 getLogger().warning(e.getMessage());

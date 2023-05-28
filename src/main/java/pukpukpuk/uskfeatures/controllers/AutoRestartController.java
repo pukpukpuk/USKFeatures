@@ -17,7 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
-public class AutoRestartController implements Listener {
+public class AutoRestartController implements IController {
 
     public AutoRestartController() {
         USKFeatures.getCommandManager().registerCommand(new UptimeCommand());

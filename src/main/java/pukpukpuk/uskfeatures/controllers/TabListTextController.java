@@ -15,7 +15,7 @@ import pukpukpuk.uskfeatures.USKFeatures;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-public class TabListTextController implements Listener {
+public class TabListTextController implements IController {
 
     private double previousTPS = -1;
     private final HashMap<String, Integer> previousPings = new LinkedHashMap<>();

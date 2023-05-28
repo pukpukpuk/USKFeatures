@@ -15,7 +15,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import pukpukpuk.uskfeatures.ColorTable;
 
-public class NamesColorController implements Listener {
+public class NamesColorController implements IController {
 
     public static final MiniMessage COLORS = MiniMessage.builder().tags(TagResolver.builder()
             .resolver(StandardTags.color())
@@ -39,7 +39,7 @@ public class NamesColorController implements Listener {
         Component component = Component.text(player.getName());
 
         String environment = getEnvironmentName(player);
-        component = component.color(ColorTable.tryGet(environment).getColor());
+        component = component.color(ColorTable.tryGet(environment+"_DIMENSION").getColor());
 
         player.playerListName(component);
         player.displayName(component);

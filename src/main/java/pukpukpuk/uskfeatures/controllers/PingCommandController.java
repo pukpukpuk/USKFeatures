@@ -11,7 +11,7 @@ import pukpukpuk.uskfeatures.ColorTable;
 import pukpukpuk.uskfeatures.USKFeatures;
 
 @CommandAlias("ping")
-public class PingCommandController extends BaseCommand implements Listener {
+public class PingCommandController extends BaseCommand implements IController {
 
     public PingCommandController() {
         USKFeatures.getCommandManager().registerCommand(this);
