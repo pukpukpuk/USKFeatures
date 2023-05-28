@@ -58,26 +58,10 @@ public class ChatController implements Listener {
             message = message.substring(1);
         }
 
-        List<Component> componentList = createMessageComponent(player, message, toGlobal);
-
-        List<Audience> audiences = new ArrayList<>();
-        audiences.add(Bukkit.getConsoleSender());
-        audiences.add(player);
-
-        Bukkit.getOnlinePlayers().forEach(recipient -> {
-            if (recipient == player)
-                return;
-
-            boolean sameWorld = player.getWorld() == recipient.getWorld();
-            boolean inRadius = sameWorld && player.getLocation().distanceSquared(recipient.getLocation()) <= 128 * 128;
-            boolean canHear = sameWorld && inRadius;
-
-            if (toGlobal || canHear) {
-                audiences.add(recipient);
-            }
-        });
-
+        List<Audience> audiences = getPlayerAudiences(player, toGlobal);
         boolean noOneHasHeard = audiences.size() <= 2 && !toGlobal;
+
+        List<Component> componentList = createMessageComponent(player, message, toGlobal);
 
         if (!noOneHasHeard && !toGlobal) {
             Component component = componentList.remove(componentList.size() - 1);
@@ -107,6 +91,27 @@ public class ChatController implements Listener {
         if (noOneHasHeard) {
             player.sendMessage(ColorTable.ERROR.coloredText("Твоё сообщение никто не увидел"));
         }
+    }
+
+    private List<Audience> getPlayerAudiences(Player player, boolean toGlobal) {
+        List<Audience> audiences = new ArrayList<>();
+        audiences.add(Bukkit.getConsoleSender());
+        audiences.add(player);
+
+        Bukkit.getOnlinePlayers().forEach(recipient -> {
+            if (recipient == player)
+                return;
+
+            boolean sameWorld = player.getWorld() == recipient.getWorld();
+            boolean inRadius = sameWorld && player.getLocation().distanceSquared(recipient.getLocation()) <= 128 * 128;
+            boolean canHear = sameWorld && inRadius;
+
+            if (toGlobal || canHear) {
+                audiences.add(recipient);
+            }
+        });
+
+        return audiences;
     }
 
     private List<Component> createMessageComponent(Player player, String message, boolean toGlobal) {
