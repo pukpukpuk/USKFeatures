@@ -20,8 +20,8 @@ public class TabListTextController implements Listener {
     private double previousTPS = -1;
     private final HashMap<String, Integer> previousPings = new LinkedHashMap<>();
 
-    public TabListTextController(USKFeatures uskFeatures) {
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(uskFeatures, () -> {
+    public TabListTextController() {
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(USKFeatures.getPlugin(), () -> {
             Bukkit.getOnlinePlayers().forEach(player -> {
                 updatePlayerListTexts(player);
                 previousPings.put(player.getName(), player.getPing());

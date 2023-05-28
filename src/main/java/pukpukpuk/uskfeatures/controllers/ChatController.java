@@ -119,7 +119,7 @@ public class ChatController implements Listener {
                 : "Это сообщение видят только те, кто находится в восьми чанках от вас";
 
         chatMarkComponent = chatMarkComponent.hoverEvent(
-                HoverEvent.showText(markColor.coloredText(hintTitle).append(ColorTable.text(hintText+"\n")))
+                HoverEvent.showText(markColor.coloredText(hintTitle+"\n").append(ColorTable.text(hintText)))
         );
 
         ColorTable nameColor = toGlobal ? ColorTable.GLOBAL_CHAT_NAME : ColorTable.LOCAL_CHAT_NAME;
