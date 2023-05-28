@@ -3,6 +3,7 @@ package pukpukpuk.uskfeatures.controllers;
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.*;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -26,8 +27,11 @@ public class PingCommandController extends BaseCommand implements Listener {
     private void printPing(Player recipient, Player player) {
         String text = recipient == player ? " Твой пинг: " : String.format(" Пинг игрока %s: ", player.getName());
 
+        Component hint = ColorTable.HIGHLIGHTED.coloredText("Пинг\n")
+                .append(ColorTable.text("Время, за которое отправленные данные достигают сервера."));
+
         recipient.sendMessage(ColorTable.HIGHLIGHTED.coloredText(" ⇵")
-                .append(ColorTable.text(text))
+                .append(ColorTable.text(text).hoverEvent(HoverEvent.showText(hint)))
                 .append(ColorTable.HIGHLIGHTED.coloredText(player.getPing()))
         );
     }
