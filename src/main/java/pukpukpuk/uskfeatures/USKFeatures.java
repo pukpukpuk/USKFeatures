@@ -1,17 +1,14 @@
 package pukpukpuk.uskfeatures;
 
 import co.aikar.commands.PaperCommandManager;
-import com.google.common.reflect.ClassPath;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.reflections.Reflections;
 import pukpukpuk.uskfeatures.controllers.IController;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public final class USKFeatures extends JavaPlugin {
 

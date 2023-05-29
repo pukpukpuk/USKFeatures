@@ -1,18 +1,14 @@
 package pukpukpuk.uskfeatures.controllers;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
 import org.bukkit.Bukkit;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import pukpukpuk.uskfeatures.ColorTable;
 
 public class NamesColorController implements IController {
@@ -39,7 +35,7 @@ public class NamesColorController implements IController {
         Component component = Component.text(player.getName());
 
         String environment = getEnvironmentName(player);
-        component = component.color(ColorTable.tryGet(environment+"_DIMENSION").getColor());
+        component = component.color(ColorTable.tryGet(environment + "_DIMENSION").getColor());
 
         player.playerListName(component);
         player.displayName(component);

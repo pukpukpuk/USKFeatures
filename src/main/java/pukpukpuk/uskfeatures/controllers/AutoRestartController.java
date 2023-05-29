@@ -6,7 +6,6 @@ import co.aikar.commands.annotation.Default;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
 import org.bukkit.command.CommandSender;
-import org.bukkit.event.Listener;
 import pukpukpuk.uskfeatures.ColorTable;
 import pukpukpuk.uskfeatures.USKFeatures;
 

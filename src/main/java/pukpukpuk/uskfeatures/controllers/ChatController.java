@@ -3,42 +3,24 @@ package pukpukpuk.uskfeatures.controllers;
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.Default;
-import co.aikar.commands.annotation.HelpCommand;
 import co.aikar.commands.annotation.Private;
-import lombok.AllArgsConstructor;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.ComponentBuilder;
-import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
-import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import pukpukpuk.uskfeatures.ColorTable;
 import pukpukpuk.uskfeatures.USKFeatures;
 
-import java.time.Clock;
-import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -65,13 +47,12 @@ public class ChatController implements IController {
         Player player = event.getPlayer();
         String message = event.getMessage();
 
-        boolean exclSymbol = message.toCharArray()[0] == '!';
+        boolean exclSymbol = message.startsWith("!");
         boolean inverted = toggleGlobalCommand.players.contains(player.getName());
         boolean toGlobal = inverted != exclSymbol;
 
-        if (exclSymbol) {
+        if (exclSymbol)
             message = message.substring(1);
-        }
 
         List<Audience> audiences = getPlayerAudiences(player, toGlobal);
         boolean noOneHasHeard = audiences.size() <= 2 && !toGlobal;
@@ -103,9 +84,8 @@ public class ChatController implements IController {
         for (Audience audience : audiences)
             audience.sendMessage(component);
 
-        if (noOneHasHeard) {
+        if (noOneHasHeard)
             player.sendMessage(ColorTable.ERROR.coloredText("Твоё сообщение никто не увидел"));
-        }
     }
 
     private List<Audience> getPlayerAudiences(Player player, boolean toGlobal) {
@@ -160,16 +140,14 @@ public class ChatController implements IController {
 
         return nameColor.coloredText(player.getName())
                 .hoverEvent(HoverEvent.showText(hint))
-                .clickEvent(ClickEvent.runCommand(String.format("/chat @%s > %s", player.getName(), message)));
+                .clickEvent(ClickEvent.runCommand(String.format("/chat @%s >%s", player.getName(), message)));
     }
 
     private ColorTable getMessageColor(String message) {
         String[] strings = message.split(" ");
-        for (int i = 0; i < strings.length; i++) {
-            String string = strings[i];
-            if(checkMention(string) != null) {
+        for (String string : strings) {
+            if (checkMention(string) != null)
                 continue;
-            }
 
             return string.startsWith(">") ? ColorTable.GREENTEXT : ColorTable.DEFAULT;
         }
@@ -183,22 +161,27 @@ public class ChatController implements IController {
 
         Component component = Component.empty();
 
-        for (String word: words) {
+        boolean quoteStarted = false;
+        for (String word : words) {
+            if (word.startsWith(">"))
+                quoteStarted = true;
+
             ColorTable wordColor = color;
 
             Player mentioned = checkMention(word);
-            if(mentioned != null) {
+            if (mentioned != null && !quoteStarted) {
                 mentionedPlayers.add(mentioned);
 
                 wordColor = ColorTable.MENTIONED;
-                word = (word.charAt(0) != '@' ? "@" : "") + word;
+                if (!word.startsWith("@"))
+                    word = "@" + word;
             }
 
             component = component.append(wordColor.coloredText(word + " "));
         }
 
         mentionedPlayers.forEach(mentioned -> {
-            if(audiences.contains(mentioned)) {
+            if (audiences.contains(mentioned)) {
                 mentioned.playSound(mentioned, Sound.BLOCK_NOTE_BLOCK_IRON_XYLOPHONE, SoundCategory.PLAYERS, .8f, 1.2f);
             }
         });
@@ -222,7 +205,7 @@ public class ChatController implements IController {
 
     @CommandAlias("toggleglobal|tg")
     public static class ToggleGlobalCommand extends BaseCommand {
-        private List<String> players = new LinkedList<>();
+        private final List<String> players = new LinkedList<>();
 
         @Default
         public void OnDefault(Player player) {
