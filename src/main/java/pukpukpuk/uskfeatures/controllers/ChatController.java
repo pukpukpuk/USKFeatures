@@ -40,7 +40,8 @@ import java.util.regex.Pattern;
 
 public class ChatController implements IController {
 
-    private static Pattern PING_REGEX = Pattern.compile("^@(.+)");
+    private static final Pattern PING_REGEX = Pattern.compile("^@(.+)");
+    private static final Pattern GREENTEXT_REGEX = Pattern.compile("^>.+");
 
     private final ToggleGlobalCommand toggleGlobalCommand;
 
@@ -141,17 +142,26 @@ public class ChatController implements IController {
         Component nameComponent = nameColor.coloredText(player.getName())
                 .hoverEvent(HoverEvent.showText(ColorTable.TIME.coloredText(getTimeText())));
 
-        return new ArrayList<>(List.of(chatMarkComponent, nameComponent, ColorTable.text(": "), mentionPlayers(message, audiences)));
+        ColorTable color = getMessageColor(message);
+
+        return new ArrayList<>(List.of(chatMarkComponent,
+                nameComponent,
+                ColorTable.text(": "),
+                mentionPlayers(message, color, audiences)));
     }
 
-    private Component mentionPlayers(String message, List<Audience> audiences) {
+    private ColorTable getMessageColor(String message) {
+        return GREENTEXT_REGEX.matcher(message).matches() ? ColorTable.GREENTEXT : ColorTable.DEFAULT;
+    }
+
+    private Component mentionPlayers(String message, ColorTable color, List<Audience> audiences) {
         String[] words = message.split(" ");
         Set<Player> mentionedPlayers = new HashSet<>();
 
         Component component = Component.empty();
 
         for (String word: words) {
-            ColorTable wordColor = ColorTable.DEFAULT;
+            ColorTable wordColor = color;
 
             Matcher matcher = PING_REGEX.matcher(word);
             Player withSymbol = matcher.matches() ? Bukkit.getPlayerExact(matcher.group(1)) : null;

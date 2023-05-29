@@ -21,6 +21,7 @@ public enum ColorTable {
     SUCCESS(0x4e9363),
     WARNING(0xf5c47c),
     MENTIONED(0xf5c47c),
+    GREENTEXT(0x7fbbdc),
     ;
 
     @Getter
