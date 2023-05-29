@@ -4,10 +4,13 @@ import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.Default;
 import co.aikar.commands.annotation.HelpCommand;
+import co.aikar.commands.annotation.Private;
 import lombok.AllArgsConstructor;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentBuilder;
+import net.kyori.adventure.text.TextReplacementConfig;
+import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -35,18 +38,19 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ChatController implements IController {
 
     private static final Pattern PING_REGEX = Pattern.compile("^@(.+)");
-    private static final Pattern GREENTEXT_REGEX = Pattern.compile("^>.+");
 
     private final ToggleGlobalCommand toggleGlobalCommand;
 
     public ChatController() {
         USKFeatures.getCommandManager().registerCommand(toggleGlobalCommand = new ToggleGlobalCommand());
+        USKFeatures.getCommandManager().registerCommand(new ChatCommand());
     }
 
     @EventHandler
@@ -126,32 +130,51 @@ public class ChatController implements IController {
     }
 
     private List<Component> createMessageComponent(Player player, String message, boolean toGlobal, List<Audience> audiences) {
+        return new ArrayList<>(List.of(getMarkComponent(toGlobal),
+                getNameComponent(player, message, toGlobal),
+                ColorTable.text(": "),
+                mentionPlayers(message, getMessageColor(message), audiences)));
+    }
+
+    private Component getMarkComponent(boolean toGlobal) {
         ColorTable markColor = toGlobal ? ColorTable.GLOBAL_CHAT_MARK : ColorTable.LOCAL_CHAT_MARK;
 
-        Component chatMarkComponent = markColor.coloredText(toGlobal ? "ɢ " : "ʟ ");
-
-        String hintTitle = toGlobal ? "Глобальный чат" : "Локальный чат";
-        String hintText = toGlobal ? "Это сообщение видят все игроки"
+        String title = toGlobal ? "Глобальный чат" : "Локальный чат";
+        String text = toGlobal ? "Это сообщение видят все игроки"
                 : "Это сообщение видят только те, кто находится в восьми чанках от вас";
 
-        chatMarkComponent = chatMarkComponent.hoverEvent(
-                HoverEvent.showText(markColor.coloredText(hintTitle + "\n").append(ColorTable.text(hintText)))
-        );
+        Component hint = ColorTable.TIME.coloredText(getTimeText())
+                .appendNewline()
+                .append(markColor.coloredText(title))
+                .appendNewline()
+                .append(ColorTable.text(text));
 
+        return markColor.coloredText(toGlobal ? "ɢ " : "ʟ ").hoverEvent(HoverEvent.showText(hint));
+    }
+
+    private Component getNameComponent(Player player, String message, boolean toGlobal) {
         ColorTable nameColor = toGlobal ? ColorTable.GLOBAL_CHAT_NAME : ColorTable.LOCAL_CHAT_NAME;
-        Component nameComponent = nameColor.coloredText(player.getName())
-                .hoverEvent(HoverEvent.showText(ColorTable.TIME.coloredText(getTimeText())));
 
-        ColorTable color = getMessageColor(message);
+        Component hint = ColorTable.text("Нажми, чтобы упомянуть это сообщение")
+                .replaceText(ColorTable.GREENTEXT.getReplacementConfig("упомянуть"));
 
-        return new ArrayList<>(List.of(chatMarkComponent,
-                nameComponent,
-                ColorTable.text(": "),
-                mentionPlayers(message, color, audiences)));
+        return nameColor.coloredText(player.getName())
+                .hoverEvent(HoverEvent.showText(hint))
+                .clickEvent(ClickEvent.runCommand(String.format("/chat @%s > %s", player.getName(), message)));
     }
 
     private ColorTable getMessageColor(String message) {
-        return GREENTEXT_REGEX.matcher(message).matches() ? ColorTable.GREENTEXT : ColorTable.DEFAULT;
+        String[] strings = message.split(" ");
+        for (int i = 0; i < strings.length; i++) {
+            String string = strings[i];
+            if(checkMention(string) != null) {
+                continue;
+            }
+
+            return string.startsWith(">") ? ColorTable.GREENTEXT : ColorTable.DEFAULT;
+        }
+
+        return ColorTable.DEFAULT;
     }
 
     private Component mentionPlayers(String message, ColorTable color, List<Audience> audiences) {
@@ -163,12 +186,8 @@ public class ChatController implements IController {
         for (String word: words) {
             ColorTable wordColor = color;
 
-            Matcher matcher = PING_REGEX.matcher(word);
-            Player withSymbol = matcher.matches() ? Bukkit.getPlayerExact(matcher.group(1)) : null;
-            Player withoutSymbol = Bukkit.getPlayerExact(word);
-
-            if(withSymbol != null || withoutSymbol != null) {
-                Player mentioned = withSymbol != null ? withSymbol : withoutSymbol;
+            Player mentioned = checkMention(word);
+            if(mentioned != null) {
                 mentionedPlayers.add(mentioned);
 
                 wordColor = ColorTable.MENTIONED;
@@ -185,6 +204,15 @@ public class ChatController implements IController {
         });
 
         return component;
+    }
+
+    private Player checkMention(String string) {
+        Matcher matcher = PING_REGEX.matcher(string);
+
+        Player withSymbol = matcher.matches() ? Bukkit.getPlayerExact(matcher.group(1)) : null;
+        Player withoutSymbol = Bukkit.getPlayerExact(string);
+
+        return withSymbol != null ? withSymbol : withoutSymbol;
     }
 
     private String getTimeText() {
@@ -204,6 +232,15 @@ public class ChatController implements IController {
                 players.remove(name);
             else
                 players.add(name);
+        }
+    }
+
+    @CommandAlias("chat")
+    @Private
+    public static class ChatCommand extends BaseCommand {
+        @Default
+        public void OnDefault(Player player, String message) {
+            player.chat(message);
         }
     }
 }

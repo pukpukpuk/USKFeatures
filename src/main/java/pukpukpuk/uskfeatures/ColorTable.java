@@ -3,7 +3,9 @@ package pukpukpuk.uskfeatures;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.format.TextColor;
+import org.intellij.lang.annotations.RegExp;
 
 @AllArgsConstructor
 public enum ColorTable {
@@ -53,6 +55,10 @@ public enum ColorTable {
 
     public Component coloredText(float value) {
         return coloredText(String.valueOf(value));
+    }
+
+    public TextReplacementConfig getReplacementConfig(@RegExp String content) {
+        return TextReplacementConfig.builder().match(content).replacement(coloredText(content)).build();
     }
 
     public static Component text(String content) {
