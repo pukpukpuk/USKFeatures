@@ -26,13 +26,12 @@ import java.util.regex.Pattern;
 
 public class ChatController implements IController {
 
-    private static final Pattern PING_REGEX = Pattern.compile("^@(.+)");
+    private static final Pattern MENTION_REGEX = Pattern.compile("^@(.+)");
 
     private final ToggleGlobalCommand toggleGlobalCommand;
 
     public ChatController() {
         USKFeatures.getCommandManager().registerCommand(toggleGlobalCommand = new ToggleGlobalCommand());
-        USKFeatures.getCommandManager().registerCommand(new ChatCommand());
     }
 
     @EventHandler
@@ -45,7 +44,7 @@ public class ChatController implements IController {
         event.setCancelled(true);
 
         Player player = event.getPlayer();
-        String message = event.getMessage();
+        String message = removeQuoteFlood(event.getMessage());
 
         boolean exclSymbol = message.startsWith("!");
         boolean inverted = toggleGlobalCommand.players.contains(player.getName());
@@ -113,7 +112,7 @@ public class ChatController implements IController {
         return new ArrayList<>(List.of(getMarkComponent(toGlobal),
                 getNameComponent(player, message, toGlobal),
                 ColorTable.text(": "),
-                mentionPlayers(message, getMessageColor(message), audiences)));
+                mentionPlayers(message, audiences)));
     }
 
     private Component getMarkComponent(boolean toGlobal) {
@@ -140,22 +139,78 @@ public class ChatController implements IController {
 
         return nameColor.coloredText(player.getName())
                 .hoverEvent(HoverEvent.showText(hint))
-                .clickEvent(ClickEvent.runCommand(String.format("/chat @%s >%s", player.getName(), message)));
+                .clickEvent(ClickEvent.suggestCommand(String.format("%s@%s >%s", toGlobal ? "!" : "", player.getName(), message)));
     }
 
-    private ColorTable getMessageColor(String message) {
-        String[] strings = message.split(" ");
-        for (String string : strings) {
-            if (checkMention(string) != null)
-                continue;
+    private String removeQuoteFlood(String originalMessage) {
+        StringBuilder stringBuilder = new StringBuilder();
 
-            return string.startsWith(">") ? ColorTable.GREENTEXT : ColorTable.DEFAULT;
+        int quotesReached = 0;
+        boolean lastWord = false;
+
+        char[] characters = originalMessage.toCharArray();
+        for (int i = 0; i < characters.length; i++) {
+            char c = characters[i];
+
+            stringBuilder.append(c);
+            if(lastWord) {
+                if(characters[i] == ' ') {
+                    stringBuilder.deleteCharAt(i);
+                    stringBuilder.append("...");
+                    break;
+                }
+                continue;
+            }
+
+            if(c == '>') {
+                quotesReached++;
+                if(quotesReached == 2) {
+                    if(i == characters.length-1)
+                        break;
+
+                    if(characters[i+1] == ' ') {
+                        stringBuilder.append(" ");
+                        i++;
+                    }
+                    
+                    lastWord = true;
+                }
+            }
+
         }
 
-        return ColorTable.DEFAULT;
+        return stringBuilder.toString();
+
+        //String[] words = originalMessage.split(" ");
+
+        //int quotesReached = 0;
+        //StringBuilder stringBuilder = new StringBuilder();
+
+        //for (int i = 0; i < words.length; i++) {
+        //    String word = words[i];
+
+        //    if(quotesReached >= 2) {
+        //        stringBuilder.append(word).append("...");
+        //        break;
+        //    } else {
+        //        stringBuilder.append(word).append(" ");
+        //    }
+
+        //    if (word.startsWith(">")) {
+        //        quotesReached++;
+
+        //        if(word.length() > 1) {
+
+        //        }
+
+        //    }
+
+        //}
+
+        //return stringBuilder.toString();
     }
 
-    private Component mentionPlayers(String message, ColorTable color, List<Audience> audiences) {
+    private Component mentionPlayers(String message, List<Audience> audiences) {
         String[] words = message.split(" ");
         Set<Player> mentionedPlayers = new HashSet<>();
 
@@ -166,7 +221,7 @@ public class ChatController implements IController {
             if (word.startsWith(">"))
                 quoteStarted = true;
 
-            ColorTable wordColor = color;
+            ColorTable wordColor = quoteStarted ? ColorTable.GREENTEXT : ColorTable.DEFAULT;
 
             Player mentioned = checkMention(word);
             if (mentioned != null && !quoteStarted) {
@@ -190,7 +245,7 @@ public class ChatController implements IController {
     }
 
     private Player checkMention(String string) {
-        Matcher matcher = PING_REGEX.matcher(string);
+        Matcher matcher = MENTION_REGEX.matcher(string);
 
         Player withSymbol = matcher.matches() ? Bukkit.getPlayerExact(matcher.group(1)) : null;
         Player withoutSymbol = Bukkit.getPlayerExact(string);
@@ -215,15 +270,6 @@ public class ChatController implements IController {
                 players.remove(name);
             else
                 players.add(name);
-        }
-    }
-
-    @CommandAlias("chat")
-    @Private
-    public static class ChatCommand extends BaseCommand {
-        @Default
-        public void OnDefault(Player player, String message) {
-            player.chat(message);
         }
     }
 }
