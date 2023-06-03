@@ -172,7 +172,7 @@ public class ChatController implements IController {
                         stringBuilder.append(" ");
                         i++;
                     }
-                    
+
                     lastWord = true;
                 }
             }
@@ -266,10 +266,15 @@ public class ChatController implements IController {
         public void OnDefault(Player player) {
             String name = player.getName();
 
-            if (players.contains(name))
+            boolean removed = players.contains(name);
+            if (removed)
                 players.remove(name);
             else
                 players.add(name);
+
+            player.sendMessage(ColorTable.HIGHLIGHTED.coloredText(" ☂ ")
+                    .append(ColorTable.text("Инверсия чата "))
+                    .append(ColorTable.HIGHLIGHTED.coloredText(removed ? "выключена" : "включена")));
         }
     }
 }
