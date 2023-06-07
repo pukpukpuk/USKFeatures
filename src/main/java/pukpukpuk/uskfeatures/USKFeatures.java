@@ -3,12 +3,11 @@ package pukpukpuk.uskfeatures;
 import co.aikar.commands.PaperCommandManager;
 import lombok.Getter;
 import org.bukkit.Bukkit;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.reflections.Reflections;
-import pukpukpuk.uskfeatures.controllers.IController;
 
 import java.util.HashSet;
-import java.util.Set;
 
 public final class USKFeatures extends JavaPlugin {
 
@@ -27,25 +26,21 @@ public final class USKFeatures extends JavaPlugin {
     }
 
     private void registerComponents() {
-        String packageName = IController.class.getPackage().getName();
+        String packageName = Controller.class.getPackage().getName();
 
         Reflections reflections = new Reflections(packageName);
-        Set<Class<?>> classes = new HashSet<>(reflections.getSubTypesOf(IController.class));
+        HashSet<Class<?>> classes = new HashSet<>(reflections.getTypesAnnotatedWith(Controller.class));
 
         for (Class<?> cls : classes) {
             try {
-                Class<IController> module = (Class<IController>) cls;
-                IController controller = module.getDeclaredConstructor().newInstance();
+                Class<Listener> module = (Class<Listener>) cls;
+                Listener listener = module.getDeclaredConstructor().newInstance();
 
-                Bukkit.getPluginManager().registerEvents(controller, this);
+                Bukkit.getPluginManager().registerEvents(listener, this);
             } catch (Exception e) {
                 e.printStackTrace();
                 getLogger().warning(e.getMessage());
             }
         }
-    }
-
-    @Override
-    public void onDisable() {
     }
 }

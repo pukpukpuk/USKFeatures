@@ -1,20 +1,18 @@
 package pukpukpuk.uskfeatures;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.format.TextColor;
-import org.intellij.lang.annotations.RegExp;
 
-@AllArgsConstructor
+import javax.annotation.Nullable;
+
 public enum ColorTable {
-    DEFAULT(0xe6eeed),
+    DEFAULT(0xe6eeed, "d"),
     NORMAL_DIMENSION(0x6ec077),
     NETHER_DIMENSION(0x9d4343),
     THE_END_DIMENSION(0xa17695),
     TIME(0xaaeeea),
-    HIGHLIGHTED(0xd5f893),
+    HIGHLIGHTED(0xd5f893, "h"),
     GLOBAL_CHAT_MARK(0xe39764),
     LOCAL_CHAT_MARK(0xfceba8),
     GLOBAL_CHAT_NAME(0xa9bcbf),
@@ -29,16 +27,44 @@ public enum ColorTable {
     @Getter
     private int hex;
 
+    @Getter
+    private String code;
+
+    ColorTable(int hex, String code) {
+        this.hex = hex;
+        this.code = code;
+    }
+
+    ColorTable(int hex) {
+        this(hex, null);
+    }
+
+    @Nullable
     public static ColorTable tryGet(String string) {
         try {
             return ColorTable.valueOf(string);
         } catch (Exception e) {
-            return DEFAULT;
+            return null;
         }
+    }
+
+    @Nullable
+    public static ColorTable tryGetByCode(String code) {
+        for (ColorTable value : ColorTable.values()) {
+            if (value.code.equals(code)) {
+                return value;
+            }
+        }
+
+        return null;
     }
 
     public TextColor getColor() {
         return TextColor.color(hex);
+    }
+
+    public String getHexString() {
+        return "#" + Integer.toString(hex, 16);
     }
 
     public Component coloredText(String content) {
@@ -55,10 +81,6 @@ public enum ColorTable {
 
     public Component coloredText(float value) {
         return coloredText(String.valueOf(value));
-    }
-
-    public TextReplacementConfig getReplacementConfig(@RegExp String content) {
-        return TextReplacementConfig.builder().match(content).replacement(coloredText(content)).build();
     }
 
     public static Component text(String content) {

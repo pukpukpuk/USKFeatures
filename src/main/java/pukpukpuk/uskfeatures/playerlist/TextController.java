@@ -1,4 +1,4 @@
-package pukpukpuk.uskfeatures.controllers;
+package pukpukpuk.uskfeatures.playerlist;
 
 import lombok.AllArgsConstructor;
 import net.kyori.adventure.text.Component;
@@ -6,19 +6,23 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import pukpukpuk.uskfeatures.ColorTable;
+import pukpukpuk.uskfeatures.ComponentUtils;
+import pukpukpuk.uskfeatures.Controller;
 import pukpukpuk.uskfeatures.USKFeatures;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-public class TabListTextController implements IController {
+@Controller
+public class TextController implements Listener {
 
     private double previousTPS = -1;
     private final HashMap<String, Integer> previousPings = new LinkedHashMap<>();
 
-    public TabListTextController() {
+    public TextController() {
         Bukkit.getScheduler().scheduleSyncRepeatingTask(USKFeatures.getPlugin(), () -> {
             Bukkit.getOnlinePlayers().forEach(player -> {
                 updatePlayerListTexts(player);
@@ -37,12 +41,9 @@ public class TabListTextController implements IController {
         Component header = ColorTable.HIGHLIGHTED.coloredText(" \nUSK 5")
                 .decorate(TextDecoration.BOLD);
 
-        Component footer = Component.newline()
-                .append(getTPSLine())
-                .appendSpace()
-                .appendSpace()
-                .append(getPingLine(player))
-                .appendNewline();
+        Component footer = ComponentUtils.format(" \n @0    @1 \n ",
+                getTPSLine(),
+                getPingLine(player));
 
         player.sendPlayerListHeaderAndFooter(header, footer);
     }
@@ -54,26 +55,28 @@ public class TabListTextController implements IController {
                 : currentTPS < previousTPS ? ValueState.BAD_DECREASED
                 : ValueState.NO_CHANGE;
 
-        return ColorTable.text(" TPS: ")
-                .append(ColorTable.HIGHLIGHTED.coloredText(currentTPS))
-                .appendSpace()
-                .append(state.symbol)
-                .appendSpace();
+        return ComponentUtils.format(
+                ComponentUtils.formatColors(
+                        String.format("TPS: <h>%s</h> @0", currentTPS)
+                ),
+                state.symbol
+        );
     }
 
     private Component getPingLine(Player player) {
-        int previous = previousPings.getOrDefault(player.getName(), -1);
+        int previous = previousPings.getOrDefault(player.getName(), player.getPing());
         int current = player.getPing();
 
         ValueState state = current < previous ? ValueState.GOOD_DECREASED
                 : current > previous ? ValueState.BAD_INCREASED
                 : ValueState.NO_CHANGE;
 
-        return ColorTable.text(" Пинг: ")
-                .append(ColorTable.HIGHLIGHTED.coloredText(player.getPing()))
-                .appendSpace()
-                .append(state.symbol)
-                .appendSpace();
+        return ComponentUtils.format(
+                ComponentUtils.formatColors(
+                        String.format("Пинг: <h>%s</h> @0", player.getPing())
+                ),
+                state.symbol
+        );
     }
 
     @AllArgsConstructor

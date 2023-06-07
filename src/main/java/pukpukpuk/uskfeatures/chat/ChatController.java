@@ -1,4 +1,4 @@
-package pukpukpuk.uskfeatures.controllers;
+package pukpukpuk.uskfeatures.chat;
 
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.CommandAlias;
@@ -12,10 +12,13 @@ import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.javatuples.Pair;
 import pukpukpuk.uskfeatures.ColorTable;
+import pukpukpuk.uskfeatures.ComponentUtils;
+import pukpukpuk.uskfeatures.Controller;
 import pukpukpuk.uskfeatures.USKFeatures;
 
 import java.time.LocalTime;
@@ -24,7 +27,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ChatController implements IController {
+@Controller
+public class ChatController implements Listener {
 
     private static final Pattern MENTION_REGEX = Pattern.compile("^@(.+)");
     private static final Pattern QUOTE_REGEX = Pattern.compile("^>(\\d+)");
@@ -72,8 +76,9 @@ public class ChatController implements IController {
                     stringJoiner.add(((Player) a).getName());
             }
 
-            Component hoverText = ColorTable.text("Это сообщение увидели: ")
-                    .append(ColorTable.HIGHLIGHTED.coloredText(stringJoiner.toString()));
+            Component hoverText = ComponentUtils.formatColors(
+                    String.format("Это сообщение увидели: <h>%s</h>", stringJoiner)
+            );
 
             componentList.add(component.hoverEvent(HoverEvent.showText(hoverText)));
         }
@@ -120,21 +125,18 @@ public class ChatController implements IController {
     }
 
     private Component getMarkComponent(boolean toGlobal, int messageId) {
-        ColorTable color = ColorTable.QUOTE;
-
-        Component hint = ColorTable.text("Айди этого сообщения: ")
-                                .replaceText(color.getReplacementConfig("Айди"))
-                .append(color.coloredText(messageId)).append(ColorTable.text("."))
-                .appendNewline()
-                .append(
-                        ColorTable.text("Нажми, чтобы скопировать его")
-                                .replaceText(color.getReplacementConfig("скопировать")))
-                .appendNewline()
-                .appendNewline()
-                .append(
-                        ColorTable.text("⌚ Время отправки этого сообщения: ")
-                                .replaceText(ColorTable.TIME.getReplacementConfig("⌚")))
-                .append(ColorTable.TIME.coloredText(getTimeText()));
+        Component hint = ComponentUtils.formatColors(
+                String.format(
+                        "<@c0>Айди</@c0> этого сообщения: <@c0>%s</@c0>." +
+                                "\nНажми, чтобы <@c0>скопировать</@c0> его" +
+                                "\n" +
+                                "\n<@c1>⌚</@c1> Время отправки этого сообщения: <@c1>%s</@c1>",
+                        messageId,
+                        getTimeText()
+                ),
+                ColorTable.QUOTE,
+                ColorTable.TIME
+        );
 
         ColorTable markColor = toGlobal ? ColorTable.GLOBAL_CHAT_MARK : ColorTable.LOCAL_CHAT_MARK;
         return markColor.coloredText(toGlobal ? "ɢ " : "ʟ ")
@@ -145,8 +147,7 @@ public class ChatController implements IController {
     private Component getNameComponent(Player player, String message, boolean toGlobal, int messageId) {
         ColorTable nameColor = toGlobal ? ColorTable.GLOBAL_CHAT_NAME : ColorTable.LOCAL_CHAT_NAME;
 
-        Component hint = ColorTable.text("Нажми, чтобы упомянуть это сообщение")
-                .replaceText(ColorTable.QUOTE.getReplacementConfig("упомянуть"));
+        Component hint = ComponentUtils.formatColors("Нажми, чтобы <@c0>упомянуть</@c0> это сообщение", ColorTable.QUOTE);
 
         return nameColor.coloredText(player.getName())
                 .hoverEvent(HoverEvent.showText(hint))
@@ -181,7 +182,7 @@ public class ChatController implements IController {
                     Pair<String, Component> pair = messages.get(id);
 
                     Player player = Bukkit.getPlayerExact(pair.getValue0());
-                    if(player != null)
+                    if (player != null)
                         mentionedPlayers.add(player);
 
                     hint = ColorTable.text("В ответ на:")
@@ -192,7 +193,7 @@ public class ChatController implements IController {
             }
 
             Component subComponent = wordColor.coloredText(word + " ");
-            if(hint != null)
+            if (hint != null)
                 subComponent = subComponent.hoverEvent(HoverEvent.showText(hint));
 
             component = component.append(subComponent);
