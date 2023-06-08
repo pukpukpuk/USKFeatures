@@ -2,6 +2,7 @@ package pukpukpuk.uskfeatures;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.Bukkit;
 import org.intellij.lang.annotations.RegExp;
 
 import java.util.List;
@@ -34,7 +35,7 @@ public class ComponentUtils {
         for (MatchResult result : results) {
             String group = result.group(1);
 
-            ColorTable color = ColorTable.tryGetByCode(group.toUpperCase());
+            ColorTable color = ColorTable.tryGetByCode(group);
             if (color == null)
                 continue;
 

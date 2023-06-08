@@ -15,8 +15,9 @@ public enum ColorTable {
     HIGHLIGHTED(0xd5f893, "h"),
     GLOBAL_CHAT_MARK(0xe39764),
     LOCAL_CHAT_MARK(0xfceba8),
-    GLOBAL_CHAT_NAME(0xa9bcbf),
-    LOCAL_CHAT_NAME(0xe6eeed),
+    GLOBAL_CHAT(0xa9bcbf),
+    LOCAL_CHAT(DEFAULT.getHex()),
+    DM_CHAT(0xC06852),
     ERROR(0xbc5960),
     SUCCESS(0x4e9363),
     WARNING(0xf5c47c),
@@ -51,7 +52,7 @@ public enum ColorTable {
     @Nullable
     public static ColorTable tryGetByCode(String code) {
         for (ColorTable value : ColorTable.values()) {
-            if (value.code.equals(code)) {
+            if (value.code != null && value.code.equalsIgnoreCase(code)) {
                 return value;
             }
         }

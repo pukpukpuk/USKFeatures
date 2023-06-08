@@ -3,6 +3,7 @@ package pukpukpuk.uskfeatures.chat;
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.Default;
+import lombok.Getter;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -16,10 +17,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.javatuples.Pair;
+import org.javatuples.Triplet;
 import pukpukpuk.uskfeatures.ColorTable;
 import pukpukpuk.uskfeatures.ComponentUtils;
 import pukpukpuk.uskfeatures.Controller;
 import pukpukpuk.uskfeatures.USKFeatures;
+import pukpukpuk.uskfeatures.playerlist.Message;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -34,10 +37,19 @@ public class ChatController implements Listener {
     private static final Pattern QUOTE_REGEX = Pattern.compile("^>(\\d+)");
 
     private final ToggleGlobalCommand toggleGlobalCommand;
-    private final List<Pair<String, Component>> messages = new LinkedList<>();
+    final List<Message> messages = new LinkedList<>();
+
+    private static ChatController instance;
+
+    public static ChatController getInstance() {
+        if(instance == null)
+            instance = new ChatController();
+        return instance;
+    }
 
     public ChatController() {
         USKFeatures.getCommandManager().registerCommand(toggleGlobalCommand = new ToggleGlobalCommand());
+        instance = this;
     }
 
     @EventHandler
@@ -87,7 +99,7 @@ public class ChatController implements Listener {
         for (Component c : componentList)
             component = component.append(c);
 
-        messages.add(new Pair<>(player.getName(), component));
+        messages.add(new Message(player.getName(), component));
 
         for (Audience audience : audiences)
             audience.sendMessage(component);
@@ -121,7 +133,7 @@ public class ChatController implements Listener {
         return new ArrayList<>(List.of(getMarkComponent(toGlobal, messageId),
                 getNameComponent(player, message, toGlobal, messageId),
                 ColorTable.text(": "),
-                mentionPlayers(message, audiences)));
+                mentionPlayers(player, message, audiences)));
     }
 
     private Component getMarkComponent(boolean toGlobal, int messageId) {
@@ -145,7 +157,7 @@ public class ChatController implements Listener {
     }
 
     private Component getNameComponent(Player player, String message, boolean toGlobal, int messageId) {
-        ColorTable nameColor = toGlobal ? ColorTable.GLOBAL_CHAT_NAME : ColorTable.LOCAL_CHAT_NAME;
+        ColorTable nameColor = toGlobal ? ColorTable.GLOBAL_CHAT : ColorTable.LOCAL_CHAT;
 
         Component hint = ComponentUtils.formatColors("Нажми, чтобы <@c0>упомянуть</@c0> это сообщение", ColorTable.QUOTE);
 
@@ -154,8 +166,8 @@ public class ChatController implements Listener {
                 .clickEvent(ClickEvent.suggestCommand(String.format("%s>%s ", toGlobal ? "!" : "", messageId)));
     }
 
-    private Component mentionPlayers(String message, List<Audience> audiences) {
-        String[] words = message.split(" ");
+    Component mentionPlayers(Player whoMentions, String string, List<Audience> audiences) {
+        String[] words = string.split(" ");
         Set<Player> mentionedPlayers = new HashSet<>();
 
         Component component = Component.empty();
@@ -178,17 +190,17 @@ public class ChatController implements Listener {
                 int id = Integer.parseInt(quoteMatcher.group(1));
 
                 if (id >= 0 && id < messages.size()) {
-                    wordColor = ColorTable.QUOTE;
-                    Pair<String, Component> pair = messages.get(id);
+                    Message message = messages.get(id);
 
-                    Player player = Bukkit.getPlayerExact(pair.getValue0());
-                    if (player != null)
-                        mentionedPlayers.add(player);
+                    if(message.mayQuoteMessage(whoMentions)) {
+                        wordColor = message.isDM() ? ColorTable.DM_CHAT : ColorTable.QUOTE;
 
-                    hint = ColorTable.text("В ответ на:")
-                            .appendNewline()
-                            .appendSpace()
-                            .append(pair.getValue1());
+                        Player player = Bukkit.getPlayerExact(message.getName());
+                        if (player != null)
+                            mentionedPlayers.add(player);
+
+                        hint = ComponentUtils.format("В ответ на: \n  @0", message.getComponent());
+                    }
                 }
             }
 
@@ -217,7 +229,7 @@ public class ChatController implements Listener {
         return withSymbol != null ? withSymbol : withoutSymbol;
     }
 
-    private String getTimeText() {
+    public static String getTimeText() {
         LocalTime time = LocalTime.now();
         return time.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
     }
